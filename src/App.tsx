@@ -1,24 +1,83 @@
 import "./App.css";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  email: z.email({ message: "Invalid email address" }),
+  terms: z.boolean().refine((val) => val, {
+    message: "You must accept the terms",
+  }),
+});
+
+type FormData = z.infer<typeof schema>;
 
 function App() {
-  const [count, setCount] = useState(0);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    alert("Submitted: " + JSON.stringify(data, null, 2));
+    reset();
+  };
+
   return (
-    <>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div style={{ maxWidth: 400, margin: "auto" }}>
+      <h1>Simple React Hook Form Demo (with Zod)</h1>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        {/* Name field */}
+        <div style={{ marginBottom: 16 }}>
+          <label htmlFor="name">Name:</label>
+          <input
+            id="name"
+            type="text"
+            {...register("name")}
+            style={{ display: "block", width: "100%" }}
+          />
+          {errors.name && (
+            <span style={{ color: "red" }}>{errors.name.message}</span>
+          )}
+        </div>
+        {/* Email field */}
+        <div style={{ marginBottom: 16 }}>
+          <label htmlFor="email">Email:</label>
+          <input
+            id="email"
+            type="email"
+            {...register("email")}
+            style={{ display: "block", width: "100%" }}
+          />
+          {errors.email && (
+            <span style={{ color: "red" }}>{errors.email.message}</span>
+          )}
+        </div>
+        {/* Terms (checkbox) */}
+        <div style={{ marginBottom: 16 }}>
+          <label htmlFor="terms" style={{ display: "block" }}>
+            <input
+              id="terms"
+              type="checkbox"
+              {...register("terms")}
+              style={{ marginRight: 8 }}
+            />
+            Accept terms
+          </label>
+          {errors.terms && (
+            <span style={{ color: "red" }}>{errors.terms.message}</span>
+          )}
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   );
 }
 
