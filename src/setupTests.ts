@@ -1,7 +1,6 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom"; //to make assertions about the DOM more readable
 
 import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
 
 afterEach(() => {
   cleanup();
